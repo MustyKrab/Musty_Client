@@ -6,7 +6,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.mustyclient.MustyClient;
@@ -26,9 +25,9 @@ public class MaceMacro {
     public void init() {
         toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.mustyclient.mace_toggle",
-                KeyMapping.Category.MISC,
                 InputConstants.Type.MOUSE,
-                5
+                5,
+                "category.mustyclient"
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -84,9 +83,7 @@ public class MaceMacro {
 
         ItemStack stack = player.getInventory().getItem(targetSlot);
         if (stack.getItem() == Items.MACE) {
-            Inventory inv = player.getInventory();
-            // use reflection or Inventory#setSelected to avoid private field access
-            inv.selected = targetSlot;
+            player.getInventory().setSelectedSlot(targetSlot);
             player.sendSystemMessage(
                     Component.literal(String.format(
                             "\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSwapped to %s mace \u00a77(\u00a7f%.1f blocks\u00a77)",
