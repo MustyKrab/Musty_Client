@@ -18,40 +18,11 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     
-    - name: Generate Gradle Wrapper
-      run: |
-        mkdir -p gradle/wrapper
-        echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
-        echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
-        echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
-        echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
-        echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+    - name: Build
+      run: gradle build
     
-    - name: Create gradlew script
-      run: |
-        cat > gradlew << 'EOF'
-        #!/bin/sh
-        GRADLE_VERSION="8.5"
-        GRADLE_URL="https://services.gradle.org/distributions/gradle-\${GRADLE_VERSION}-bin.zip"
-        GRADLE_DIR=".gradle"
-        GRADLE_HOME="\${GRADLE_DIR}/gradle-\${GRADLE_VERSION}"
-        if [ ! -d "\${GRADLE_HOME}" ]; then
-          mkdir -p "\${GRADLE_DIR}"
-          echo "Downloading Gradle \${GRADLE_VERSION}..."
-          curl -L "\${GRADLE_URL}" -o "\${GRADLE_DIR}/gradle.zip"
-          unzip -q "\${GRADLE_DIR}/gradle.zip" -d "\${GRADLE_DIR}"
-          rm "\${GRADLE_DIR}/gradle.zip"
-        fi
-        "\${GRADLE_HOME}/bin/gradle" "\$@"
-        EOF
-        chmod +x gradlew
-    
-    - name: Build with Gradle
-      run: ./gradlew build --no-daemon
-    
-    - name: Upload build artifacts
+    - name: Upload JAR
       uses: actions/upload-artifact@v4
       with:
-        name: Musty-Client-Build
+        name: MustyClient
         path: build/libs/*.jar
-        if-no-files-found: error
