@@ -1,52 +1,46 @@
 plugins {
     id 'java'
-    id 'fabric-loom' version '1.0.13'
 }
 
-loom {
-    // This is the correct property for custom minecraft jar in old Loom
-    clientOnlyMinecraftJar = file("lunar-26.1.2.jar")
-    
-    // Disable mapping generation
-    generateIntermediary = false
-    generateMappings = false
-    
-    runs {
-        client {
-            programArgs "--version", "26.1.2"
-        }
-    }
-}
-
-// Skip all mapping tasks
-tasks.withType(net.fabricmc.loom.task.GenerateIntermediaryTask).configureEach {
-    enabled = false
-}
-
-tasks.withType(net.fabricmc.loom.task.GenerateMappingsTask).configureEach {
-    enabled = false
-}
+group = 'net.mustyclient'
+version = '1.0'
 
 repositories {
     mavenCentral()
+    maven {
+        name = "Fabric"
+        url = "https://maven.fabricmc.net/"
+    }
 }
 
 dependencies {
-    // Don't use modImplementation - use compileOnly to avoid mapping checks
+    // Fabric loader as a compile dep only
     compileOnly "net.fabricmc:fabric-loader:0.14.24"
     
-    // Add the lunar jar as a compile dependency
+    // Your lunar jar
     compileOnly files("lunar-26.1.2.jar")
 }
 
-// Override the minecraft dependency resolution
-configurations.all {
-    exclude group: "com.mojang", module: "minecraft"
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
-// Prevent Loom from trying to fetch minecraft
-afterEvaluate {
-    tasks.compileJava {
-        classpath += files("lunar-26.1.2.jar")
+tasks.compileJava {
+    options.encoding = "UTF-8"
+}
+
+jar {
+    from sourceSets.main.output
+    manifest {
+        attributes(
+            'MixinConfigs': 'mixins.mustyclient.json',
+            'Fabric-Loom-Remap': 'false'
+        )
+    }
+    
+    // Include fabric mod json
+    from('src/main/resources') {
+        include 'fabric.mod.json'
     }
 }
