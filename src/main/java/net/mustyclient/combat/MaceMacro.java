@@ -13,90 +13,80 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 public class MaceMacro {
 
-    private static final int DENSITY_MACE_SLOT = 8;
-    private static final int BREACH_MACE_SLOT  = 5;
+    private static final int DENSITY_MACE_SLOT = 8; // slot 9
+    private static final int BREACH_MACE_SLOT  = 5; // slot 6
 
-    private KeyMapping toggleKey;
-    private boolean enabled = true;
-
-    private double peakFallDistance = 0.0;
-    private boolean wasInAir = false;
+    private KeyMapping mb5Key;
+    private boolean attackQueued = false;
 
     public void init() {
-        toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.mustyclient.mace_toggle",
+        mb5Key = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.mustyclient.mace_slam",
                 InputConstants.Type.MOUSE,
                 5,
                 KeyMapping.Category.MISC
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (toggleKey.consumeClick()) {
-                enabled = !enabled;
-                if (client.player != null) {
-                    client.player.sendSystemMessage(
-                            Component.literal("\u00a77[\u00a7bMustyClient\u00a77] MaceMacro " +
-                                    (enabled ? "\u00a7aEnabled" : "\u00a7cDisabled"))
-                    );
-                }
-            }
-
-            if (!enabled) return;
             if (client.player == null) return;
 
             Player player = client.player;
 
-            double currentFall = player.fallDistance;
-            boolean isInAir = currentFall > 0.05;
-
-            if (isInAir && currentFall > peakFallDistance) {
-                peakFallDistance = currentFall;
+            while (mb5Key.consumeClick()) {
+                doSlam(player);
             }
 
-            if (wasInAir && !isInAir && peakFallDistance > 0.1) {
-                handleLanding(player, peakFallDistance);
-                peakFallDistance = 0.0;
+            if (attackQueued) {
+                client.options.keyAttack().setDown(false);
+                attackQueued = false;
             }
-
-            wasInAir = isInAir;
         });
 
-        MustyClient.LOGGER.info("[MaceMacro] Initialized. Toggle: Mouse Button 5");
-        MustyClient.LOGGER.info("[MaceMacro] Density slot: {} | Breach slot: {}",
-                DENSITY_MACE_SLOT + 1, BREACH_MACE_SLOT + 1);
+        MustyClient.LOGGER.info("[MaceMacro] Slam bound to Mouse Button 5");
     }
 
-    private void handleLanding(Player player, double fallDistance) {
-        int targetSlot = -1;
-        String maceType = "";
+    private void doSlam(Player player) {
+        double fallDist = player.fallDistance;
 
-        if (fallDistance > 9.0) {
+        int targetSlot;
+        String maceType;
+
+        if (fallDist > 9.0) {
             targetSlot = DENSITY_MACE_SLOT;
             maceType = "Density";
-        } else if (fallDistance > 0.1) {
+        } else {
             targetSlot = BREACH_MACE_SLOT;
             maceType = "Breach";
         }
 
-        if (targetSlot == -1) return;
-        if (targetSlot == player.getInventory().getSelectedSlot()) return;
+        if (targetSlot == player.getInventory().getSelectedSlot()) {
+            queueAttack();
+            player.sendSystemMessage(
+                    Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSlam with " + maceType + " mace \u00a77(\u00a7f" + String.format("%.1f", fallDist) + " blocks\u00a77)")
+            );
+            return;
+        }
 
         ItemStack stack = player.getInventory().getItem(targetSlot);
         if (stack.getItem() == Items.MACE) {
             player.getInventory().setSelectedSlot(targetSlot);
+            queueAttack();
             player.sendSystemMessage(
-                    Component.literal(String.format(
-                            "\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSwapped to %s mace \u00a77(\u00a7f%.1f blocks\u00a77)",
-                            maceType, fallDistance
-                    ))
+                    Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSwapped to " + maceType + " mace \u00a77(\u00a7f" + String.format("%.1f", fallDist) + " blocks\u00a77)")
             );
         } else if (!stack.isEmpty()) {
             player.sendSystemMessage(
-                    Component.literal(String.format(
-                            "\u00a77[\u00a7bMustyClient\u00a77] \u00a7cSlot %d is not a mace!",
-                            targetSlot + 1
-                    ))
+                    Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cSlot " + (targetSlot + 1) + " is not a mace!")
+            );
+        } else {
+            player.sendSystemMessage(
+                    Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cNo mace in slot " + (targetSlot + 1))
             );
         }
+    }
+
+    private void queueAttack() {
+        Minecraft.getInstance().options.keyAttack().setDown(true);
+        attackQueued = true;
     }
 }
