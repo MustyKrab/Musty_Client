@@ -1,22 +1,21 @@
 {
   "schemaVersion": 1,
-  "id": "maceautoswap",
-  "version": "${version}",
-  "name": "Mace Auto Swap",
-  "description": "Auto-swaps to Density mace for >9 block falls, Breach mace for ≤9 block falls",
-  "authors": ["Fox"],
+  "id": "mustyclient",
+  "version": "1.4.5",
+  "name": "Musty Client",
+  "description": "Cheat client for Lunar 26.1.2",
+  "authors": ["MustyKrab"],
   "contact": {},
-  "license": "MIT",
-  "icon": "assets/maceauto/icon.png",
+  "license": "All Rights Reserved",
+  "icon": "assets/mustyclient/icon.png",
   "environment": "client",
   "entrypoints": {
-    "client": ["net.maceauto.MaceAutoSwap"],
-    "main": ["net.maceauto.MaceAutoSwap"]
+    "client": ["net.mustyclient.MustyClient"],
+    "main": ["net.mustyclient.MustyClient"]
   },
-  "mixins": [],
+  "mixins": ["mustyclient.mixins.json"],
   "depends": {
-    "fabricloader": ">=0.19.2",
-    "minecraft": ">=1.21.11",
-    "fabric-api": "*"
+    "fabricloader": ">=0.14.0",
+    "minecraft": ">=1.21"
   }
 }
