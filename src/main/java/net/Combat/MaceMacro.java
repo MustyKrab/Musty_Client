@@ -18,10 +18,10 @@ public class MaceAutoSwap implements ModInitializer, ClientModInitializer {
     private static final String MOD_ID = "maceautoswap";
     
     // Configurable hotbar slots (0-8)
-    private static final int DENSITY_MACE_SLOT = 8;  // Slot 9 - Density
-    private static final int BREACH_MACE_SLOT = 5;   // Slot 6 - Breach
+    private static final int DENSITY_MACE_SLOT = 8;  // Slot 9 (0-indexed)
+    private static final int BREACH_MACE_SLOT = 5;   // Slot 6 (0-indexed)
     
-    // Toggle key (default: M)
+    // Toggle key: Mouse Button 5 (forward side button)
     private static KeyBinding toggleKey;
     private static boolean enabled = true;
     
@@ -32,15 +32,18 @@ public class MaceAutoSwap implements ModInitializer, ClientModInitializer {
     @Override
     public void onInitialize() {
         System.out.println("[MaceAutoSwap] Mod initialized!");
+        System.out.println("[MaceAutoSwap] Density mace: Slot 9 | Breach mace: Slot 6");
+        System.out.println("[MaceAutoSwap] Toggle: Mouse Button 5");
     }
     
     @Override
     public void onInitializeClient() {
-        // Register toggle key (Press M to enable/disable)
+        // Register toggle key - Mouse Button 5
+        // GLFW doesn't have constants for mouse buttons 4+5, using raw values
         toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.maceautoswap.toggle",
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_M,
+            InputUtil.Type.MOUSE,
+            6,  // Mouse Button 5 is button 6 (Button 4 = 5, Button 5 = 6)
             "category.maceautoswap"
         ));
         
@@ -80,7 +83,7 @@ public class MaceAutoSwap implements ModInitializer, ClientModInitializer {
             wasInAir = isInAir;
         });
         
-        System.out.println("[MaceAutoSwap] Client initialized! Press M to toggle.");
+        System.out.println("[MaceAutoSwap] Client initialized! Toggle: Mouse Button 5");
     }
     
     private void handleLanding(PlayerEntity player, float fallDistance) {
