@@ -37,7 +37,7 @@ public class MaceMacro {
             }
 
             if (attackQueued) {
-                client.options.keyAttack().setDown(false);
+                client.options.keyAttack.setDown(false);
                 attackQueued = false;
             }
         });
@@ -86,7 +86,7 @@ public class MaceMacro {
     }
 
     private void queueAttack() {
-        Minecraft.getInstance().options.keyAttack().setDown(true);
+        Minecraft.getInstance().options.keyAttack.setDown(true);
         attackQueued = true;
     }
 }
