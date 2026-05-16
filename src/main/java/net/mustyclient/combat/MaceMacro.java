@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -17,7 +18,6 @@ public class MaceMacro {
     private static final int BREACH_MACE_SLOT  = 5; // slot 6
 
     private KeyMapping mb5Key;
-    private boolean attackQueued = false;
 
     public void init() {
         mb5Key = KeyMappingHelper.registerKeyMapping(new KeyMapping(
@@ -30,22 +30,16 @@ public class MaceMacro {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
 
-            Player player = client.player;
-
             while (mb5Key.consumeClick()) {
-                doSlam(player);
-            }
-
-            if (attackQueued) {
-                client.options.keyAttack.setDown(false);
-                attackQueued = false;
+                doSlam(client);
             }
         });
 
         MustyClient.LOGGER.info("[MaceMacro] Slam bound to Mouse Button 5");
     }
 
-    private void doSlam(Player player) {
+    private void doSlam(Minecraft client) {
+        Player player = client.player;
         double fallDist = player.fallDistance;
 
         int targetSlot;
@@ -59,34 +53,37 @@ public class MaceMacro {
             maceType = "Breach";
         }
 
-        if (targetSlot == player.getInventory().getSelectedSlot()) {
-            queueAttack();
-            player.sendSystemMessage(
-                    Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSlam with " + maceType + " mace \u00a77(\u00a7f" + String.format("%.1f", fallDist) + " blocks\u00a77)")
-            );
-            return;
+        // Swap to the correct mace if needed
+        if (targetSlot != player.getInventory().getSelectedSlot()) {
+            ItemStack stack = player.getInventory().getItem(targetSlot);
+            if (stack.getItem() == Items.MACE) {
+                player.getInventory().setSelectedSlot(targetSlot);
+            } else if (!stack.isEmpty()) {
+                player.sendSystemMessage(
+                        Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cSlot " + (targetSlot + 1) + " is not a mace!")
+                );
+                return;
+            } else {
+                player.sendSystemMessage(
+                        Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cNo mace in slot " + (targetSlot + 1))
+                );
+                return;
+            }
         }
 
-        ItemStack stack = player.getInventory().getItem(targetSlot);
-        if (stack.getItem() == Items.MACE) {
-            player.getInventory().setSelectedSlot(targetSlot);
-            queueAttack();
-            player.sendSystemMessage(
-                    Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSwapped to " + maceType + " mace \u00a77(\u00a7f" + String.format("%.1f", fallDist) + " blocks\u00a77)")
-            );
-        } else if (!stack.isEmpty()) {
-            player.sendSystemMessage(
-                    Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cSlot " + (targetSlot + 1) + " is not a mace!")
-            );
+        // Perform attack
+        if (client.hitResult != null && client.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.ENTITY) {
+            Entity target = ((net.minecraft.world.phys.EntityHitResult) client.hitResult).getEntity();
+            client.gameMode.attack(player, target);
         } else {
-            player.sendSystemMessage(
-                    Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cNo mace in slot " + (targetSlot + 1))
-            );
+            // No entity targeted — just swing for cooldown reset / visual
+            player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+            // Also try attacking air to trigger the slam on landing
+            client.gameMode.attack(player, null); // null entity = swing + attack packet
         }
-    }
 
-    private void queueAttack() {
-        Minecraft.getInstance().options.keyAttack.setDown(true);
-        attackQueued = true;
+        player.sendSystemMessage(
+                Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSlammed with " + maceType + " mace \u00a77(\u00a7f" + String.format("%.1f", fallDist) + " blocks\u00a77)")
+        );
     }
 }
