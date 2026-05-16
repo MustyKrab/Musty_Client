@@ -27,7 +27,7 @@ public class MaceMacro {
                 "key.mustyclient.mace_toggle",
                 InputConstants.Type.MOUSE,
                 5,
-                "category.mustyclient"
+                KeyMapping.Category.MISC
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
