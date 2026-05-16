@@ -1,55 +1,22 @@
-buildscript {
-    repositories {
-        maven {
-            name = "Fabric"
-            url = "https://maven.fabricmc.net/"
-        }
-        mavenCentral()
-    }
-    dependencies {
-        classpath "net.fabricmc:fabric-loom:1.16-SNAPSHOT"
-    }
+plugins {
+    id 'java'
+    id 'fabric-loom' version '1.0.13' // Last version before strict validation
 }
 
-apply plugin: "fabric-loom"
-apply plugin: "java"
-
-version = project.mod_version
-group = project.maven_group
-
-base {
-    archivesName = project.archives_base_name
+loom {
+    minecraftJar = file("lunar-26.1.2.jar")
+    // NO mappings - we work obfuscated
+    runs {
+        client {
+            programArgs "--version", "26.1.2"
+        }
+    }
 }
 
 repositories {
     mavenCentral()
-    maven {
-        name = "Fabric"
-        url = "https://maven.fabricmc.net/"
-    }
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-}
-
-processResources {
-    inputs.property "version", project.version
-    filteringCharset "UTF-8"
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    modImplementation "net.fabricmc:fabric-loader:0.14.24"
 }
