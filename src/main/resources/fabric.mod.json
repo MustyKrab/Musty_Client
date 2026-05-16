@@ -3,7 +3,7 @@
   "id": "mustyclient",
   "version": "${version}",
   "name": "Musty Client",
-  "description": "Mace macro mod for vanilla Minecraft 1.21.4 + Fabric",
+  "description": "Mace macro for Minecraft 26.1.2 + Fabric",
   "authors": ["MustyKrab"],
   "contact": {},
   "license": "All Rights Reserved",
@@ -14,9 +14,9 @@
   },
   "mixins": ["mustyclient.mixins.json"],
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": ">=1.21.4",
-    "java": ">=21",
+    "fabricloader": ">=0.18.0",
+    "minecraft": ">=26.1.2",
+    "java": ">=25",
     "fabric-api": "*"
   }
 }

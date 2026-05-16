@@ -1,45 +1,45 @@
 package net.mustyclient.combat;
 
+// MC 26.1 uses official Mojang mappings — class names match Mojang's obfmap
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;  // renamed from KeyBindingHelper
+import net.minecraft.client.KeyMapping;                                  // renamed from KeyBinding
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;                             // renamed from Text
+import net.minecraft.world.entity.player.Player;                         // renamed from PlayerEntity
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.mustyclient.MustyClient;
+import com.mojang.blaze3d.platform.InputConstants;                       // replaces InputUtil
 
 public class MaceMacro {
 
-    // Configurable hotbar slots (0-indexed, so slot 9 = index 8, slot 6 = index 5)
+    // Hotbar slots (0-indexed): slot 9 = index 8, slot 6 = index 5
     private static final int DENSITY_MACE_SLOT = 8;
     private static final int BREACH_MACE_SLOT  = 5;
 
-    private KeyBinding toggleKey;
+    private KeyMapping toggleKey;
     private boolean enabled = true;
 
-    // Fall tracking
     private float peakFallDistance = 0.0f;
     private boolean wasInAir = false;
 
     public void init() {
-        // Register toggle key — Mouse Button 5 (forward side button)
-        // GLFW mouse button 5 = index 6 (0=left,1=right,2=middle,3=back,4=forward... actually GLFW_MOUSE_BUTTON_6 = 5)
-        toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        // Mouse Button 5 (forward side button) = GLFW button index 5
+        toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.mustyclient.mace_toggle",
-                InputUtil.Type.MOUSE,
-                5, // GLFW_MOUSE_BUTTON_6 — forward side button
+                InputConstants.Type.MOUSE,
+                5,
                 "category.mustyclient"
         ));
 
+        // END_CLIENT_TICK is unchanged in 26.1
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            // Handle toggle
-            while (toggleKey.wasPressed()) {
+            while (toggleKey.consumeClick()) {
                 enabled = !enabled;
                 if (client.player != null) {
-                    client.player.sendMessage(
-                            Text.literal("\u00a77[\u00a7bMustyClient\u00a77] MaceMacro " +
+                    client.player.displayClientMessage(
+                            Component.literal("\u00a77[\u00a7bMustyClient\u00a77] MaceMacro " +
                                     (enabled ? "\u00a7aEnabled" : "\u00a7cDisabled")),
                             true
                     );
@@ -49,17 +49,15 @@ public class MaceMacro {
             if (!enabled) return;
             if (client.player == null) return;
 
-            PlayerEntity player = client.player;
+            Player player = client.player;
 
             float currentFall = player.fallDistance;
             boolean isInAir = currentFall > 0.05f;
 
-            // Track peak fall distance while airborne
             if (isInAir && currentFall > peakFallDistance) {
                 peakFallDistance = currentFall;
             }
 
-            // On landing (just transitioned from air to ground)
             if (wasInAir && !isInAir && peakFallDistance > 0.1f) {
                 handleLanding(player, peakFallDistance);
                 peakFallDistance = 0.0f;
@@ -69,11 +67,11 @@ public class MaceMacro {
         });
 
         MustyClient.LOGGER.info("[MaceMacro] Initialized. Toggle: Mouse Button 5");
-        MustyClient.LOGGER.info("[MaceMacro] Density mace: Slot {} | Breach mace: Slot {}",
+        MustyClient.LOGGER.info("[MaceMacro] Density slot: {} | Breach slot: {}",
                 DENSITY_MACE_SLOT + 1, BREACH_MACE_SLOT + 1);
     }
 
-    private void handleLanding(PlayerEntity player, float fallDistance) {
+    private void handleLanding(Player player, float fallDistance) {
         int targetSlot = -1;
         String maceType = "";
 
@@ -86,21 +84,21 @@ public class MaceMacro {
         }
 
         if (targetSlot == -1) return;
-        if (targetSlot == player.getInventory().selectedSlot) return;
+        if (targetSlot == player.getInventory().selected) return;  // .selected = selectedSlot in official mappings
 
-        ItemStack stack = player.getInventory().getStack(targetSlot);
+        ItemStack stack = player.getInventory().getItem(targetSlot);  // getItem = getStack in official mappings
         if (stack.getItem() == Items.MACE) {
-            player.getInventory().selectedSlot = targetSlot;
-            player.sendMessage(
-                    Text.literal(String.format(
+            player.getInventory().selected = targetSlot;
+            player.displayClientMessage(
+                    Component.literal(String.format(
                             "\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSwapped to %s mace \u00a77(\u00a7f%.1f blocks\u00a77)",
                             maceType, fallDistance
                     )),
                     true
             );
         } else if (!stack.isEmpty()) {
-            player.sendMessage(
-                    Text.literal(String.format(
+            player.displayClientMessage(
+                    Component.literal(String.format(
                             "\u00a77[\u00a7bMustyClient\u00a77] \u00a7cSlot %d is not a mace!",
                             targetSlot + 1
                     )),
