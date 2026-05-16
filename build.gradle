@@ -1,11 +1,16 @@
 plugins {
     id 'java'
-    id 'fabric-loom' version '1.0.13' // Last version before strict validation
+    id 'fabric-loom' version '1.0.13'
 }
 
 loom {
-    minecraftJar = file("lunar-26.1.2.jar")
-    // NO mappings - we work obfuscated
+    // This is the correct property for custom minecraft jar in old Loom
+    clientOnlyMinecraftJar = file("lunar-26.1.2.jar")
+    
+    // Disable mapping generation
+    generateIntermediary = false
+    generateMappings = false
+    
     runs {
         client {
             programArgs "--version", "26.1.2"
@@ -13,10 +18,35 @@ loom {
     }
 }
 
+// Skip all mapping tasks
+tasks.withType(net.fabricmc.loom.task.GenerateIntermediaryTask).configureEach {
+    enabled = false
+}
+
+tasks.withType(net.fabricmc.loom.task.GenerateMappingsTask).configureEach {
+    enabled = false
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:0.14.24"
+    // Don't use modImplementation - use compileOnly to avoid mapping checks
+    compileOnly "net.fabricmc:fabric-loader:0.14.24"
+    
+    // Add the lunar jar as a compile dependency
+    compileOnly files("lunar-26.1.2.jar")
+}
+
+// Override the minecraft dependency resolution
+configurations.all {
+    exclude group: "com.mojang", module: "minecraft"
+}
+
+// Prevent Loom from trying to fetch minecraft
+afterEvaluate {
+    tasks.compileJava {
+        classpath += files("lunar-26.1.2.jar")
+    }
 }
