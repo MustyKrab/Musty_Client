@@ -1,9 +1,14 @@
 plugins {
+    id 'fabric-loom' version "${loom_version}"
     id 'java'
 }
 
-group = 'net.mustyclient'
-version = '1.0'
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
 
 repositories {
     mavenCentral()
@@ -14,33 +19,39 @@ repositories {
 }
 
 dependencies {
-    // Fabric loader as a compile dep only
-    compileOnly "net.fabricmc:fabric-loader:0.14.24"
-    
-    // Your lunar jar
-    compileOnly files("lunar-26.1.2.jar")
+    // Minecraft + Yarn mappings
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
+    // Fabric Loader
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    withSourcesJar()
 }
 
-tasks.compileJava {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
+    options.release = 21
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
 }
 
 jar {
-    from sourceSets.main.output
-    manifest {
-        attributes(
-            'MixinConfigs': 'mixins.mustyclient.json',
-            'Fabric-Loom-Remap': 'false'
-        )
-    }
-    
-    // Include fabric mod json
-    from('src/main/resources') {
-        include 'fabric.mod.json'
+    from("LICENSE") {
+        rename { "${it}_${project.archives_base_name}" }
     }
 }

@@ -1,21 +1,22 @@
 {
   "schemaVersion": 1,
   "id": "mustyclient",
-  "version": "1.4.5",
+  "version": "${version}",
   "name": "Musty Client",
-  "description": "Cheat client for Lunar 26.1.2",
+  "description": "Mace macro mod for vanilla Minecraft 1.21.4 + Fabric",
   "authors": ["MustyKrab"],
   "contact": {},
   "license": "All Rights Reserved",
-  "icon": "assets/mustyclient/icon.png",
   "environment": "client",
   "entrypoints": {
-    "client": ["net.mustyclient.MustyClient"],
-    "main": ["net.mustyclient.MustyClient"]
+    "main": ["net.mustyclient.MustyClient"],
+    "client": ["net.mustyclient.MustyClient"]
   },
   "mixins": ["mustyclient.mixins.json"],
   "depends": {
-    "fabricloader": ">=0.14.0",
-    "minecraft": ">=1.21"
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
   }
 }
