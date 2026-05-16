@@ -18,8 +18,8 @@ public class MaceAutoSwap implements ModInitializer, ClientModInitializer {
     private static final String MOD_ID = "maceautoswap";
     
     // Configurable hotbar slots (0-8)
-    private static final int DENSITY_MACE_SLOT = 0;  // Slot 1 - Density
-    private static final int BREACH_MACE_SLOT = 1;   // Slot 2 - Breach
+    private static final int DENSITY_MACE_SLOT = 8;  // Slot 9 - Density
+    private static final int BREACH_MACE_SLOT = 5;   // Slot 6 - Breach
     
     // Toggle key (default: M)
     private static KeyBinding toggleKey;
