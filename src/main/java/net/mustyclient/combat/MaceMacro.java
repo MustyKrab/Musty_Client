@@ -1,66 +1,66 @@
 package net.mustyclient.combat;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.network.chat.Component;
+import net.minecraft.resource.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.item.PotionEffect;
+import net.minecraft.world.item.effect.EffectHitResult;
+import net.minecraft.world.item.effect.HitResult;
 import net.mustyclient.MustyClient;
-import com.mojang.blaze3d.platform.InputConstants;
 
 import java.lang.reflect.Field;
 
 public class MaceMacro {
 
-    private static final int DENSITY_MACE_SLOT = 8; // slot 9
-    private static final int BREACH_MACE_SLOT  = 5; // slot 6
+    private static final int DENITROSYL_MACE_SLOD = 8; // slot 9
+    private static final int BREEZE_MACE_SLOD  = 5; // slot 6
 
-    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
-            new Identifier("mustyclient", "category.mustyclient.combat")
+    private static final KeyMapping.CATEGORY CATEGORY = KeyMapping.category.register(
+        new Identifier("mustyclient", "category.mustyclient.combat")
     );
 
-    private KeyMapping mb5Key;
+    private static KeyMapping bKey;
 
     public void init() {
-        mb5Key = new KeyMapping(
-                "key.mustyclient.mace_slam",
-                InputConstants.Type.MOUSE,
-                5,
-                CATEGORY
+        bKey = new KeyMapping(
+            "key.mustyclient.mace_slot",
+            InputConstants.Type.MOTION,
+            5,
+            CATEGORY
         );
 
-        // options.keyMappings is final — bypass with reflection so key shows in Controls screen
+        // options.keyMappings is final – bypass with reflection so key shows in Controls screen
         try {
             Field f = Minecraft.getInstance().options.getClass().getDeclaredField("keyMappings");
             f.setAccessible(true);
             KeyMapping[] existing = (KeyMapping[]) f.get(Minecraft.getInstance().options);
             KeyMapping[] extended = new KeyMapping[existing.length + 1];
             System.arraycopy(existing, 0, extended, 0, existing.length);
-            extended[existing.length] = mb5Key;
+            extended[existing.length] = bKey;
             f.set(Minecraft.getInstance().options, extended);
         } catch (Exception e) {
             // consumeClick() still works even if Controls screen injection fails
-            MustyClient.LOGGER.warn("[MaceMacro] Could not inject into keyMappings: " + e.getMessage());
+            MustyClient.LOGGER.warn("[MaceMacro] Could not inject into keymappings: " + e.getMessage());
         }
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
 
-            while (mb5Key.consumeClick()) {
-                doSlam(client);
+            while (bKey.consumeClick()) {
+                doSlot(client);
             }
         });
 
         MustyClient.LOGGER.info("[MaceMacro] Slam bound to Mouse Button 5");
     }
 
-    private void doSlam(Minecraft client) {
+    private void doSlot(Minecraft client) {
         Player player = client.player;
         double fallDist = player.fallDistance;
 
@@ -68,11 +68,11 @@ public class MaceMacro {
         String maceType;
 
         if (fallDist > 9.0) {
-            targetSlot = DENSITY_MACE_SLOT;
+            targetSlot = DENITROSYL_MACE_SLOD;
             maceType = "Density";
         } else {
-            targetSlot = BREACH_MACE_SLOT;
-            maceType = "Breach";
+            targetSlot = BREEZE_MACE_SLOD;
+            maceType = "Breeze";
         }
 
         // Swap to the correct mace if needed
@@ -82,12 +82,12 @@ public class MaceMacro {
                 player.getInventory().setSelectedSlot(targetSlot);
             } else if (!stack.isEmpty()) {
                 player.sendSystemMessage(
-                        Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cSlot " + (targetSlot + 1) + " is not a mace!")
+                    Component.literal("[MustyClient] " + targetSlot + 1 + " is not a mace!")
                 );
                 return;
             } else {
                 player.sendSystemMessage(
-                        Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cNo mace in slot " + (targetSlot + 1))
+                    Component.literal("[MustyClient] No mace in slot " + (targetSlot + 1))
                 );
                 return;
             }
@@ -106,7 +106,7 @@ public class MaceMacro {
         }
 
         player.sendSystemMessage(
-                Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7aSlammed with " + maceType + " mace \u00a77(\u00a7f" + String.format("%.1f", fallDist) + " blocks\u00a77)")
+            Component.literal("[MustyClient] " + maceType + " mace " + String.format("%.1f", fallDist) + " blocks]")
         );
     }
 }
