@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,8 +21,9 @@ public class MaceMacro {
     private static final int DENSITY_MACE_SLOT = 8; // slot 9
     private static final int BREACH_MACE_SLOT  = 5; // slot 6
 
-    // "key.categories.misc" is the plain string vanilla uses — no constant exists in modern MC
-    private static final String CATEGORY = "key.categories.misc";
+    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
+            ResourceLocation.fromNamespaceAndPath("mustyclient", "category.mustyclient.combat")
+    );
 
     private KeyMapping mb5Key;
 
@@ -33,7 +35,7 @@ public class MaceMacro {
                 CATEGORY
         );
 
-        // options.keyMappings is final — bypass with reflection so the key shows in Controls screen
+        // options.keyMappings is final — bypass with reflection so key shows in Controls screen
         try {
             Field f = Minecraft.getInstance().options.getClass().getDeclaredField("keyMappings");
             f.setAccessible(true);
@@ -43,7 +45,7 @@ public class MaceMacro {
             extended[existing.length] = mb5Key;
             f.set(Minecraft.getInstance().options, extended);
         } catch (Exception e) {
-            // Controls screen won't show it, but consumeClick() still works
+            // consumeClick() still works even if Controls screen injection fails
             MustyClient.LOGGER.warn("[MaceMacro] Could not inject into keyMappings: " + e.getMessage());
         }
 
