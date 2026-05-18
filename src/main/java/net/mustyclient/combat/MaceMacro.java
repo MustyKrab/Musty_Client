@@ -22,10 +22,9 @@ import com.mojang.blaze3d.platform.InputConstants;
  * MaceMacro — MB5 slam with silent AC bypass.
  *
  * Silent approach:
- *   - Slot swap via ServerboundHeldItemChangePacket (no visual flicker).
+ *   - Slot swap via ServerboundSetCarriedItemPacket (no visual flicker).
  *   - Attack via raw ServerboundInteractPacket (bypasses client-side cooldown check).
  *   - Swing via ServerboundSwingPacket (server sees the animation, no client swing).
- *   - No sendSystemMessage spam in production — only debug mode.
  */
 public class MaceMacro {
 
@@ -38,7 +37,6 @@ public class MaceMacro {
 
     private KeyMapping mb5Key;
 
-    // Ticks to wait between slot-swap and attack packet — 1 tick is enough
     private static final int SWAP_DELAY_TICKS = 1;
     private int pendingAttackTicks = -1;
     private Entity pendingTarget = null;
@@ -55,7 +53,6 @@ public class MaceMacro {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null || client.level == null) return;
 
-            // Delayed attack after slot swap
             if (pendingAttackTicks > 0) {
                 pendingAttackTicks--;
             } else if (pendingAttackTicks == 0) {
@@ -81,13 +78,11 @@ public class MaceMacro {
 
         int targetSlot = fallDist > 9.0 ? DENSITY_MACE_SLOT : BREACH_MACE_SLOT;
 
-        // Resolve target
         Entity target = null;
         if (client.hitResult != null && client.hitResult.getType() == HitResult.Type.ENTITY) {
             target = ((EntityHitResult) client.hitResult).getEntity();
         }
         if (target == null) {
-            // No entity on crosshair — swing in air silently
             silentSwing(client, player);
             return;
         }
@@ -105,9 +100,7 @@ public class MaceMacro {
         }
 
         if (player.getInventory().getSelectedSlot() != targetSlot) {
-            // Silent slot swap — send packet directly, no visual
             silentSlotSwap(client, player, targetSlot);
-            // Queue the attack for next tick so server processes swap first
             pendingTarget = target;
             pendingSlot = targetSlot;
             pendingAttackTicks = SWAP_DELAY_TICKS;
@@ -116,40 +109,26 @@ public class MaceMacro {
         }
     }
 
-    /**
-     * Swap hotbar slot silently via packet — no client-side inventory.selected change,
-     * so no visual flicker or prediction mismatch.
-     */
     public static void silentSlotSwap(Minecraft client, LocalPlayer player, int slot) {
         client.getConnection().send(
                 new net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket(slot)
         );
-        // Also update client-side so subsequent getSelectedSlot() calls are correct
         player.getInventory().setSelectedSlot(slot);
     }
 
     /**
-     * Attack via raw packet — bypasses client cooldown gating.
-     * Server will still enforce its own cooldown, but we don't get blocked client-side.
-     *
-     * ServerboundInteractPacket has no static factory in 1.21.x Yarn/Mojmap.
-     * Correct constructor: ServerboundInteractPacket(int entityId, boolean sneaking, Action action)
-     * Attack action is the ATTACK inner enum/record — use createAttackPacket via the
-     * public static method that actually exists: ServerboundInteractPacket.createAttackPacket
-     * does NOT exist; instead construct directly with the entity id and ATTACK action type.
+     * MC 26.1.2 — unobfuscated Mojang names, no Yarn.
+     * ServerboundInteractPacket has no createAttackPacket factory.
+     * Constructor: ServerboundInteractPacket(int entityId, boolean sneaking, Action action)
+     * Action is a sealed interface; ATTACK impl is the inner record ServerboundInteractPacket.Attack (no fields).
      */
     public static void silentAttack(Minecraft client, LocalPlayer player, Entity target) {
-        // Correct API: pass entity id + sneaking flag; the packet internally uses ATTACK action
         client.getConnection().send(
-                ServerboundInteractPacket.createAttackPacket(target, player.isShiftKeyDown())
+                new ServerboundInteractPacket(target.getId(), player.isShiftKeyDown(), ServerboundInteractPacket.Attack.INSTANCE)
         );
         silentSwing(client, player);
     }
 
-    /**
-     * Send swing animation packet without triggering client swing state.
-     * Prevents arm animation desync that AC systems flag.
-     */
     public static void silentSwing(Minecraft client, LocalPlayer player) {
         client.getConnection().send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
     }
