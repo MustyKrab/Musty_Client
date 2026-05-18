@@ -1,4 +1,5 @@
 {
-  "key.mustyclient.mace_toggle": "Toggle Mace Macro",
-  "category.mustyclient": "Musty Client"
+  "key.mustyclient.mace_slam": "Mace Slam (MB5)",
+  "key.mustyclient.mace_aura_toggle": "Toggle Mace Aura",
+  "category.mustyclient.combat": "Musty Client — Combat"
 }
