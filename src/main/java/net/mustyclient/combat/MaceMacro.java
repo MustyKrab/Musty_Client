@@ -1,7 +1,7 @@
 package net.mustyclient.combat;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -22,7 +22,7 @@ public class MaceMacro {
     private KeyMapping mb5Key;
 
     public void init() {
-        mb5Key = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        mb5Key = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.mustyclient.mace_slam",
                 InputConstants.Type.MOUSE,
                 5,
@@ -82,7 +82,6 @@ public class MaceMacro {
                 player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
             }
         } else {
-            // No entity targeted — just swing for cooldown reset / visual
             player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
         }
 
