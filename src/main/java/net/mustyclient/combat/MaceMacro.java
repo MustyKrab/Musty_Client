@@ -1,7 +1,7 @@
 package net.mustyclient.combat;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -9,6 +9,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.mustyclient.MustyClient;
 import com.mojang.blaze3d.platform.InputConstants;
 
@@ -72,14 +74,16 @@ public class MaceMacro {
         }
 
         // Perform attack
-        if (client.hitResult != null && client.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.ENTITY) {
-            Entity target = ((net.minecraft.world.phys.EntityHitResult) client.hitResult).getEntity();
-            client.gameMode.attack(player, target);
+        if (client.hitResult != null && client.hitResult.getType() == HitResult.Type.ENTITY) {
+            Entity target = ((EntityHitResult) client.hitResult).getEntity();
+            if (target != null) {
+                client.gameMode.attack(player, target);
+            } else {
+                player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+            }
         } else {
             // No entity targeted — just swing for cooldown reset / visual
             player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
-            // Also try attacking air to trigger the slam on landing
-            client.gameMode.attack(player, null); // null entity = swing + attack packet
         }
 
         player.sendSystemMessage(
