@@ -6,7 +6,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
@@ -21,10 +21,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 /**
  * MaceMacro — MB5 slam with silent AC bypass.
  *
- * Silent approach:
- *   - Slot swap via ServerboundSetCarriedItemPacket (no visual flicker).
- *   - Attack via raw ServerboundInteractPacket (bypasses client-side cooldown check).
- *   - Swing via ServerboundSwingPacket (server sees the animation, no client swing).
+ * MC 26.1.2: attack was split out of ServerboundInteractPacket into its own
+ * ServerboundAttackPacket(int entityId) record. ServerboundInteractPacket is
+ * now interact/interact_at only.
  */
 public class MaceMacro {
 
@@ -117,15 +116,11 @@ public class MaceMacro {
     }
 
     /**
-     * MC 26.1.2 — unobfuscated Mojang names, no Yarn.
-     * ServerboundInteractPacket has no createAttackPacket factory.
-     * Constructor: ServerboundInteractPacket(int entityId, boolean sneaking, Action action)
-     * Action is a sealed interface; ATTACK impl is the inner record ServerboundInteractPacket.Attack (no fields).
+     * MC 26.1.2: attack is now ServerboundAttackPacket(int entityId).
+     * ServerboundInteractPacket is interact/interact_at only — no attack action.
      */
     public static void silentAttack(Minecraft client, LocalPlayer player, Entity target) {
-        client.getConnection().send(
-                new ServerboundInteractPacket(target.getId(), player.isShiftKeyDown(), ServerboundInteractPacket.Attack.INSTANCE)
-        );
+        client.getConnection().send(new ServerboundAttackPacket(target.getId()));
         silentSwing(client, player);
     }
 
