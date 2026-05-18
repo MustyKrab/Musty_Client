@@ -13,10 +13,15 @@ import net.minecraft.world.phys.HitResult;
 import net.mustyclient.MustyClient;
 import com.mojang.blaze3d.platform.InputConstants;
 
+import java.lang.reflect.Field;
+
 public class MaceMacro {
 
     private static final int DENSITY_MACE_SLOT = 8; // slot 9
     private static final int BREACH_MACE_SLOT  = 5; // slot 6
+
+    // "key.categories.misc" is the plain string vanilla uses — no constant exists in modern MC
+    private static final String CATEGORY = "key.categories.misc";
 
     private KeyMapping mb5Key;
 
@@ -25,15 +30,22 @@ public class MaceMacro {
                 "key.mustyclient.mace_slam",
                 InputConstants.Type.MOUSE,
                 5,
-                KeyMapping.CATEGORY_MISC
+                CATEGORY
         );
 
-        // Register the keybinding into the game options so it shows in Controls screen
-        KeyMapping[] existing = Minecraft.getInstance().options.keyMappings;
-        KeyMapping[] extended = new KeyMapping[existing.length + 1];
-        System.arraycopy(existing, 0, extended, 0, existing.length);
-        extended[existing.length] = mb5Key;
-        Minecraft.getInstance().options.keyMappings = extended;
+        // options.keyMappings is final — bypass with reflection so the key shows in Controls screen
+        try {
+            Field f = Minecraft.getInstance().options.getClass().getDeclaredField("keyMappings");
+            f.setAccessible(true);
+            KeyMapping[] existing = (KeyMapping[]) f.get(Minecraft.getInstance().options);
+            KeyMapping[] extended = new KeyMapping[existing.length + 1];
+            System.arraycopy(existing, 0, extended, 0, existing.length);
+            extended[existing.length] = mb5Key;
+            f.set(Minecraft.getInstance().options, extended);
+        } catch (Exception e) {
+            // Controls screen won't show it, but consumeClick() still works
+            MustyClient.LOGGER.warn("[MaceMacro] Could not inject into keyMappings: " + e.getMessage());
+        }
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
