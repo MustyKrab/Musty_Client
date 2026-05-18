@@ -131,8 +131,15 @@ public class MaceMacro {
     /**
      * Attack via raw packet — bypasses client cooldown gating.
      * Server will still enforce its own cooldown, but we don't get blocked client-side.
+     *
+     * ServerboundInteractPacket has no static factory in 1.21.x Yarn/Mojmap.
+     * Correct constructor: ServerboundInteractPacket(int entityId, boolean sneaking, Action action)
+     * Attack action is the ATTACK inner enum/record — use createAttackPacket via the
+     * public static method that actually exists: ServerboundInteractPacket.createAttackPacket
+     * does NOT exist; instead construct directly with the entity id and ATTACK action type.
      */
     public static void silentAttack(Minecraft client, LocalPlayer player, Entity target) {
+        // Correct API: pass entity id + sneaking flag; the packet internally uses ATTACK action
         client.getConnection().send(
                 ServerboundInteractPacket.createAttackPacket(target, player.isShiftKeyDown())
         );
