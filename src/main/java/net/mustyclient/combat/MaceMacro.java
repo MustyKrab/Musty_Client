@@ -1,7 +1,6 @@
 package net.mustyclient.combat;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -22,12 +21,19 @@ public class MaceMacro {
     private KeyMapping mb5Key;
 
     public void init() {
-        mb5Key = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        mb5Key = new KeyMapping(
                 "key.mustyclient.mace_slam",
                 InputConstants.Type.MOUSE,
                 5,
-                KeyMapping.Category.MISC
-        ));
+                KeyMapping.CATEGORY_MISC
+        );
+
+        // Register the keybinding into the game options so it shows in Controls screen
+        KeyMapping[] existing = Minecraft.getInstance().options.keyMappings;
+        KeyMapping[] extended = new KeyMapping[existing.length + 1];
+        System.arraycopy(existing, 0, extended, 0, existing.length);
+        extended[existing.length] = mb5Key;
+        Minecraft.getInstance().options.keyMappings = extended;
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
