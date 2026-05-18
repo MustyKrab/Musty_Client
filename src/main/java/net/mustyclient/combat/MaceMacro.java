@@ -1,10 +1,11 @@
 package net.mustyclient.combat;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -14,40 +15,24 @@ import net.minecraft.world.phys.HitResult;
 import net.mustyclient.MustyClient;
 import com.mojang.blaze3d.platform.InputConstants;
 
-import java.lang.reflect.Field;
-
 public class MaceMacro {
 
     private static final int DENSITY_MACE_SLOT = 8; // slot 9
     private static final int BREACH_MACE_SLOT  = 5; // slot 6
 
-    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
-            ResourceLocation.fromNamespaceAndPath("mustyclient", "category.mustyclient.combat")
+    private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(
+            Identifier.fromNamespaceAndPath("mustyclient", "category.mustyclient.combat")
     );
 
     private KeyMapping mb5Key;
 
     public void init() {
-        mb5Key = new KeyMapping(
+        mb5Key = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.mustyclient.mace_slam",
                 InputConstants.Type.MOUSE,
                 5,
                 CATEGORY
-        );
-
-        // options.keyMappings is final — bypass with reflection so key shows in Controls screen
-        try {
-            Field f = Minecraft.getInstance().options.getClass().getDeclaredField("keyMappings");
-            f.setAccessible(true);
-            KeyMapping[] existing = (KeyMapping[]) f.get(Minecraft.getInstance().options);
-            KeyMapping[] extended = new KeyMapping[existing.length + 1];
-            System.arraycopy(existing, 0, extended, 0, existing.length);
-            extended[existing.length] = mb5Key;
-            f.set(Minecraft.getInstance().options, extended);
-        } catch (Exception e) {
-            // consumeClick() still works even if Controls screen injection fails
-            MustyClient.LOGGER.warn("[MaceMacro] Could not inject into keyMappings: " + e.getMessage());
-        }
+        ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
@@ -76,10 +61,10 @@ public class MaceMacro {
         }
 
         // Swap to the correct mace if needed
-        if (targetSlot != player.getInventory().selected) {
+        if (targetSlot != player.getInventory().getSelectedSlot()) {
             ItemStack stack = player.getInventory().getItem(targetSlot);
             if (stack.getItem() == Items.MACE) {
-                player.getInventory().selected = targetSlot;
+                player.getInventory().setSelectedSlot(targetSlot);
             } else if (!stack.isEmpty()) {
                 player.sendSystemMessage(
                         Component.literal("\u00a77[\u00a7bMustyClient\u00a77] \u00a7cSlot " + (targetSlot + 1) + " is not a mace!")
