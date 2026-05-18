@@ -22,7 +22,7 @@ public class MaceMacro {
     private static final int BREACH_MACE_SLOT  = 5; // slot 6
 
     private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
-            Identifier.of("mustyclient", "category.mustyclient.combat")
+            new Identifier("mustyclient", "category.mustyclient.combat")
     );
 
     private KeyMapping mb5Key;
