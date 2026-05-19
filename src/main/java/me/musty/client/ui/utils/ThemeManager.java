@@ -1,6 +1,6 @@
 package me.musty.client.ui.utils;
 
-import me.musty.client.ui.enum.ClickGuiTheme;
+import me.musty.client.ui.enums.ClickGuiTheme;
 import java.awt.Color;
 
 public class ThemeManager {
