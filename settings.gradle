@@ -13,5 +13,3 @@ pluginManagement {
 }
 
 rootProject.name = 'musty-client'
-maven { name = 'Fabric' }
-maven { name = 'Modmuss' }
