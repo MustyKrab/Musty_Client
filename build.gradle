@@ -3,11 +3,11 @@ plugins {
     id 'java'
 }
 
-version = project.property('mod_version')
-group = project.property('maven_group')
+version = project.mod_version
+group = project.maven_group
 
 base {
-    archivesName = project.property('archives_base_name')
+    archivesName = project.archives_base_name
 }
 
 repositories {
@@ -17,9 +17,9 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.property('minecraft_version')}"
-    modImplementation "net.fabricmc:fabric-loader:${project.property('loader_version')}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.property('fabric_version')}"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
 java {
@@ -42,6 +42,6 @@ processResources {
 
 jar {
     from('LICENSE') {
-        rename { "${it}_${project.property('archives_base_name')}" }
+        rename { "${it}_${project.archives_base_name}" }
     }
 }
