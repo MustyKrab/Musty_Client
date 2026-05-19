@@ -1,12 +1,10 @@
-pluginManagement {
-    repositories {
-        maven {
-            name = "Fabric"
-            url = "https://maven.fabricmc.net/"
-        }
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-rootProject.name = "musty-client"
+cGx1Z2luTWFuYWdlbWVudCB7CiAgICByZXBvc2l0b3JpZXMgewogICAgICAg
+IG1hdmVuIHsKICAgICAgICAgICAgbmFtZSA9ICJGYWJyaWMiCiAgICAgICAg
+ICAgIHVybCA9ICJodHRwczovL21hdmVuLmZhYnJpY21jLm5ldC8iCiAgICAg
+ICAgfQogICAgICAgIG1hdmVuQ2VudHJhbCgpCiAgICAgICAgZ3JhZGxlUGx1
+Z2luUG9ydGFsKCkKICAgIH0KICAgIHJlc29sdXRpb25TdHJhdGVneSB7CiAg
+ICAgICAiZWFjaCIgUGx1Z2luIHsKICAgICAgICAgICAgaWYgKHJlcXVlc3Rl
+ZC5pZC5pZCA9PSAnbmV0LmZhYnJpY21jLmZhYnJpYy1sb29tJykgewogICAg
+ICAgICAgICAgICAgdXNlVmVyc2lvbignMS4xNC43JykKICAgICAgICAgICAg
+fQogICAgICAgIH0KICAgIH0KfQoKcm9vdFByb2plY3QubmFtZSA9ICJtdXN0
+eS1jbGllbnQiCg==
