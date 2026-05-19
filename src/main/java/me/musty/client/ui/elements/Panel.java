@@ -1,6 +1,9 @@
 package me.musty.client.ui.elements;
 
 import java.awt.Color;
+import me.musty.client.ui.renderers.ShapeRenderer;
+import me.musty.client.ui.renderers.TextRenderer;
+import me.musty.client.ui.utils.Mouse;
 
 public class Panel {
     private float x, y, width, height;
