@@ -1,10 +1,17 @@
-cGx1Z2luTWFuYWdlbWVudCB7CiAgICByZXBvc2l0b3JpZXMgewogICAgICAg
-IG1hdmVuIHsKICAgICAgICAgICAgbmFtZSA9ICJGYWJyaWMiCiAgICAgICAg
-ICAgIHVybCA9ICJodHRwczovL21hdmVuLmZhYnJpY21jLm5ldC8iCiAgICAg
-ICAgfQogICAgICAgIG1hdmVuQ2VudHJhbCgpCiAgICAgICAgZ3JhZGxlUGx1
-Z2luUG9ydGFsKCkKICAgIH0KICAgIHJlc29sdXRpb25TdHJhdGVneSB7CiAg
-ICAgICAiZWFjaCIgUGx1Z2luIHsKICAgICAgICAgICAgaWYgKHJlcXVlc3Rl
-ZC5pZC5pZCA9PSAnbmV0LmZhYnJpY21jLmZhYnJpYy1sb29tJykgewogICAg
-ICAgICAgICAgICAgdXNlVmVyc2lvbignMS4xNC43JykKICAgICAgICAgICAg
-fQogICAgICAgIH0KICAgIH0KfQoKcm9vdFByb2plY3QubmFtZSA9ICJtdXN0
-eS1jbGllbnQiCg==
+pluginManagement {
+    repositories {
+        maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+        maven { name = 'Modmuss'; url = 'https://maven.modmuss50.me/' }
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'net.fabricmc.fabric-loom') {
+                useVersion('1.14.7')
+            }
+        }
+    }
+}
+
+rootProject.name = 'musty-client'
+maven { name = 'Fabric' }
+maven { name = 'Modmuss' }
