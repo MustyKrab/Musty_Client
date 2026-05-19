@@ -1,27 +1,52 @@
-cGx1Z2lucyB7CiAgICBpZCAnbmV0LmZhYnJpY21jLmZhYnJpYy1sb29tJyB2
-ZXJzaW9uICIke2xvb21fdmVyc2lvbn0iCiAgICBpZCAnamF2YScKfQoKdmVy
-c2lvbiA9IHByb2plY3QubW9kX3ZlcnNpb24KZ3JvdXAgPSBwcm9qZWN0Lm1h
-dmVuX2dyb3VwCgpiYXNlIHsKICAgIGFyY2hpdmVzTmFtZSA9IHByb2plY3Qu
-YXJjaGl2ZXNfYmFzZV9uYW1lCn0KCnJlcG9zaXRvcmllcyB7CiAgICBtYXZl
-bkNlbnRyYWwoKQogICAgbWF2ZW4gewogICAgICAgIG5hbWUgPSAiRmFicmlj
-IgogICAgICAgIHVybCA9ICJodHRwczovL21hdmVuLmZhYnJpY21jLm5ldC8i
-CiAgICB9Cn0KCmRlcGVuZGVuY2llcyB7CiAgICBtaW5lY3JhZnQgImNvbS5t
-b2phbmc6bWluZWNyYWZ0OiR7cHJvamVjdC5taW5lY3JhZnRfdmVyc2lvbn0i
-CgogICAgLy8gTG9hZGVyIE1VU1QgYmUgbW9kSW1wbGVtZW50YXRpb24gc28g
-TG9vbSByZWdpc3RlcnMgaXRzIGNvbmZpZ3VyYXRpb25zCiAgICBtb2RJbXBs
-ZW1lbnRhdGlvbiAibmV0LmZhYnJpY21jOmZhYnJpYy1sb2FkZXI6JHtwcm9q
-ZWN0LmxvYWRlcl92ZXJzaW9ufSIKCiAgICAvLyBGYWJyaWMgQVBJIOKAlCBt
-b2RJbXBsZW1lbnRhdGlvbiBzbyBjb21waWxlLXRpbWUgY2xhc3NlcyAoV29y
-bGRSZW5kZXJFdmVudHMgZXRjLikgcmVzb2x2ZQogICAgbW9kSW1wbGVtZW50
-YXRpb24gIm5ldC5mYWJyaWNtYy5mYWJyaWMtYXBpOmZhYnJpYy1hcGk6JHtw
-cm9qZWN0LmZhYnJpY192ZXJzaW9ufSIKfQoKamF2YSB7CiAgICB0b29sY2hh
-aW4gewogICAgICAgIGxhbmd1YWdlVmVyc2lvbiA9IEphdmFMYW5ndWFnZVZl
-cnNpb24ub2YoMjUpCiAgICB9CiAgICB3aXRoU291cmNlc0phcigpCn0KCnRh
-c2tzLndpdGhUeXBlKEphdmFDb21waWxlKS5jb25maWd1cmVFYWNoIHsKICAg
-IG9wdGlvbnMuZW5jb2RpbmcgPSAiVVRGLTgiCiAgICBvcHRpb25zLnJlbGVh
-c2UgPSAyNQp9Cgpwcm9jZXNzUmVzb3VyY2VzIHsKICAgIGlucHV0cy5wcm9w
-ZXJ0eSAidmVyc2lvbiIsIHByb2plY3QudmVyc2lvbgogICAgZmlsZXNNYXRj
-aGluZygiZmFicmljLm1vZC5qc29uIikgewogICAgICAgIGV4cGFuZCAidmVy
-c2lvbiI6IHByb2plY3QudmVyc2lvbgogICAgfQp9CgpqYXIgewogICAgZnJv
-bSgiTElDRU5TRSIpIHsKICAgICAgICByZW5hbWUgeyAiJHtpdH1fJHtwcm9q
-ZWN0LmFyY2hpdmVzX2Jhc2VfbmFtZX0iIH0KICAgIH0KfQo=
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.14.7'
+    id 'java'
+}
+
+version = mod_version
+group = maven_group
+
+base {
+    archivesName = archives_base_name
+}
+
+repositories {
+    maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+    maven { name = 'Modmuss'; url = 'https://maven.modmuss50.me/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings "net.fabricmc:yarn:${minecraft_version}+build.${mappings_version}"
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+
+    // Fabric API - this should work with modImplementation now
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 17
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filteringCharset 'UTF-8'
+    filesMatching('fabric.mod.json') {
+        expand version: project.version
+    }
+}
+
+loom {
+    mixin {
+        useLegacyMixinAp = true
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
