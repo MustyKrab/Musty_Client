@@ -1,5 +1,4 @@
 plugins {
-    // 26.1+ Loom does NOT remap — use net.fabricmc.fabric-loom (not fabric-loom)
     id 'net.fabricmc.fabric-loom' version "${loom_version}"
     id 'java'
 }
@@ -20,14 +19,12 @@ repositories {
 }
 
 dependencies {
-    // MC 26.1+ is unobfuscated — minecraft() is still a Loom config
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
 
-    // Fabric Loader — plain implementation, no remapping in 26.1
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    // Loader MUST be modImplementation so Loom registers its configurations
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // Fabric API — MUST be modImplementation so Loom puts it on the compile
-    // classpath and makes fabric.mod.json / rendering APIs resolvable
+    // Fabric API — modImplementation so compile-time classes (WorldRenderEvents etc.) resolve
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
