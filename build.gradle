@@ -23,11 +23,12 @@ dependencies {
     // MC 26.1+ is unobfuscated — minecraft() is still a Loom config
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
 
-    // Fabric Loader — use plain implementation, NOT modImplementation (no remapping in 26.1)
+    // Fabric Loader — plain implementation, no remapping in 26.1
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // Fabric API — same, plain implementation
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    // Fabric API — MUST be modImplementation so Loom puts it on the compile
+    // classpath and makes fabric.mod.json / rendering APIs resolvable
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
 java {

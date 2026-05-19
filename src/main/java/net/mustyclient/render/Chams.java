@@ -1,6 +1,5 @@
 package net.mustyclient.render;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
@@ -18,11 +17,9 @@ import java.awt.Color;
 /**
  * Chams ESP — two-pass AABB box renderer.
  *
- * Uses raw GL11 calls (stable across MC versions) instead of the
- * constantly-changing RenderSystem wrappers.
- *
- * Pass 1: GL_ALWAYS depth func  → semi-transparent through-wall color
- * Pass 2: GL_LEQUAL depth func  → solid visible color
+ * Uses raw GL11 (stable, no version churn) for depth/blend/draw.
+ * Pass 1: GL_ALWAYS  → occluded color through walls
+ * Pass 2: GL_LEQUAL  → visible color on top
  */
 public class Chams {
 
@@ -90,23 +87,23 @@ public class Chams {
         if (filledChams) {
             GL11.glBegin(GL11.GL_QUADS);
             // bottom
-            GL11.glVertex3d(x0, y0, z0); GL11.glVertex3d(x1, y0, z0);
-            GL11.glVertex3d(x1, y0, z1); GL11.glVertex3d(x0, y0, z1);
+            GL11.glVertex3d(x0,y0,z0); GL11.glVertex3d(x1,y0,z0);
+            GL11.glVertex3d(x1,y0,z1); GL11.glVertex3d(x0,y0,z1);
             // top
-            GL11.glVertex3d(x0, y1, z0); GL11.glVertex3d(x0, y1, z1);
-            GL11.glVertex3d(x1, y1, z1); GL11.glVertex3d(x1, y1, z0);
+            GL11.glVertex3d(x0,y1,z0); GL11.glVertex3d(x0,y1,z1);
+            GL11.glVertex3d(x1,y1,z1); GL11.glVertex3d(x1,y1,z0);
             // north
-            GL11.glVertex3d(x0, y0, z0); GL11.glVertex3d(x0, y1, z0);
-            GL11.glVertex3d(x1, y1, z0); GL11.glVertex3d(x1, y0, z0);
+            GL11.glVertex3d(x0,y0,z0); GL11.glVertex3d(x0,y1,z0);
+            GL11.glVertex3d(x1,y1,z0); GL11.glVertex3d(x1,y0,z0);
             // south
-            GL11.glVertex3d(x0, y0, z1); GL11.glVertex3d(x1, y0, z1);
-            GL11.glVertex3d(x1, y1, z1); GL11.glVertex3d(x0, y1, z1);
+            GL11.glVertex3d(x0,y0,z1); GL11.glVertex3d(x1,y0,z1);
+            GL11.glVertex3d(x1,y1,z1); GL11.glVertex3d(x0,y1,z1);
             // west
-            GL11.glVertex3d(x0, y0, z0); GL11.glVertex3d(x0, y0, z1);
-            GL11.glVertex3d(x0, y1, z1); GL11.glVertex3d(x0, y1, z0);
+            GL11.glVertex3d(x0,y0,z0); GL11.glVertex3d(x0,y0,z1);
+            GL11.glVertex3d(x0,y1,z1); GL11.glVertex3d(x0,y1,z0);
             // east
-            GL11.glVertex3d(x1, y0, z0); GL11.glVertex3d(x1, y1, z0);
-            GL11.glVertex3d(x1, y1, z1); GL11.glVertex3d(x1, y0, z1);
+            GL11.glVertex3d(x1,y0,z0); GL11.glVertex3d(x1,y1,z0);
+            GL11.glVertex3d(x1,y1,z1); GL11.glVertex3d(x1,y0,z1);
             GL11.glEnd();
         } else {
             GL11.glBegin(GL11.GL_LINES);
@@ -134,18 +131,18 @@ public class Chams {
         return self.getTeam().equals(other.getTeam());
     }
 
-    public boolean isEnabled()              { return enabled; }
-    public void    setEnabled(boolean v)    { enabled = v; }
-    public Color   getVisibleColor()        { return visibleColor; }
-    public void    setVisibleColor(Color c) { visibleColor = c; }
-    public Color   getOccludedColor()       { return occludedColor; }
-    public void    setOccludedColor(Color c){ occludedColor = c; }
-    public boolean isTeamCheck()            { return teamCheck; }
-    public void    setTeamCheck(boolean v)  { teamCheck = v; }
-    public boolean isSelfChams()            { return selfChams; }
-    public void    setSelfChams(boolean v)  { selfChams = v; }
-    public boolean isFilledChams()          { return filledChams; }
-    public void    setFilledChams(boolean v){ filledChams = v; }
-    public float   getLineWidth()           { return lineWidth; }
-    public void    setLineWidth(float v)    { lineWidth = v; }
+    public boolean isEnabled()               { return enabled; }
+    public void    setEnabled(boolean v)     { enabled = v; }
+    public Color   getVisibleColor()         { return visibleColor; }
+    public void    setVisibleColor(Color c)  { visibleColor = c; }
+    public Color   getOccludedColor()        { return occludedColor; }
+    public void    setOccludedColor(Color c) { occludedColor = c; }
+    public boolean isTeamCheck()             { return teamCheck; }
+    public void    setTeamCheck(boolean v)   { teamCheck = v; }
+    public boolean isSelfChams()             { return selfChams; }
+    public void    setSelfChams(boolean v)   { selfChams = v; }
+    public boolean isFilledChams()           { return filledChams; }
+    public void    setFilledChams(boolean v) { filledChams = v; }
+    public float   getLineWidth()            { return lineWidth; }
+    public void    setLineWidth(float v)     { lineWidth = v; }
 }
