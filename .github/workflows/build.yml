@@ -18,15 +18,13 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Setup Gradle
+    - name: Setup Gradle 8.8
       uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.8'
 
-    - name: Build with Gradle Wrapper
-      run: |
-        chmod +x gradlew
-        ./gradlew build --no-daemon
-      env:
-        GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+    - name: Build
+      run: gradle build --no-daemon --stacktrace
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
