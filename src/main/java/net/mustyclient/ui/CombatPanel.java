@@ -6,22 +6,20 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.mustyclient.MustyClient;
+import net.mustyclient.combat.MaceMacro;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import java.awt.Color;
 
 /**
- * CombatPanel — lightweight in-game toggle/config panel for:
- *   - MaceAura  (toggle: R)
- *   - MaceMacro (toggle: MB5 — already wired in MaceMacro itself)
- *   - Chams ESP (toggle: V, color cycling: B)
+ * CombatPanel — keybind-driven in-game status/toggle panel.
  *
- * Opens/closes with INSERT. Prints status to action bar so you always
- * know what's on without needing a full ClickGui screen.
- *
- * No GL rendering here — just keybind-driven state management.
- * Hook a proper screen renderer into WorldRenderEvents if you want
- * an on-screen panel later.
+ * Backtick (`) = print full module status to chat
+ * R            = MaceAura toggle  (registered in MaceAura itself)
+ * MB5          = MaceMacro slam   (registered in MaceMacro itself)
+ * V            = Chams toggle
+ * B            = Chams color cycle
+ * N            = Chams style (filled / wireframe)
  */
 public class CombatPanel {
 
@@ -30,15 +28,14 @@ public class CombatPanel {
     private static KeyMapping chamsColorKey;
     private static KeyMapping chamsStyleKey;
 
-    // Chams color presets cycled with B
     private static final Color[] COLOR_PRESETS = {
-        new Color(255, 50,  50,  180),  // red
-        new Color(50,  255, 50,  180),  // green
-        new Color(50,  150, 255, 180),  // blue
-        new Color(255, 255, 50,  180),  // yellow
-        new Color(200, 50,  255, 180),  // purple
-        new Color(255, 165, 0,   180),  // orange
-        new Color(255, 255, 255, 180),  // white
+        new Color(255, 50,  50,  200),
+        new Color(50,  255, 50,  200),
+        new Color(50,  150, 255, 200),
+        new Color(255, 255, 50,  200),
+        new Color(200, 50,  255, 200),
+        new Color(255, 165, 0,   200),
+        new Color(255, 255, 255, 200),
     };
     private static final Color[] OCCLUDED_PRESETS = {
         new Color(255, 50,  50,  55),
@@ -55,10 +52,11 @@ public class CombatPanel {
     private static int colorIndex = 0;
 
     public static void init() {
+        // Backtick = GLFW key 96
         openKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.mustyclient.combat_panel",
                 InputConstants.Type.KEYSYM,
-                InputConstants.KEY_INSERT,
+                96,
                 MaceMacro.CATEGORY
         ));
 
@@ -84,25 +82,22 @@ public class CombatPanel {
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(CombatPanel::onTick);
-        MustyClient.LOGGER.info("[CombatPanel] Registered — INSERT=panel, V=chams, B=color, N=style");
+        MustyClient.LOGGER.info("[CombatPanel] Registered — `=status, V=chams, B=color, N=style");
     }
 
     private static void onTick(Minecraft mc) {
         if (mc.player == null) return;
 
-        // INSERT — print full status to chat
         while (openKey.consumeClick()) {
             printStatus(mc);
         }
 
-        // V — toggle Chams
         while (chamsToggleKey.consumeClick()) {
             boolean now = !MustyClient.chams.isEnabled();
             MustyClient.chams.setEnabled(now);
             msg(mc, "\u00a77[\u00a7bChams\u00a77] " + (now ? "\u00a7aON" : "\u00a7cOFF"));
         }
 
-        // B — cycle Chams color
         while (chamsColorKey.consumeClick()) {
             colorIndex = (colorIndex + 1) % COLOR_PRESETS.length;
             MustyClient.chams.setVisibleColor(COLOR_PRESETS[colorIndex]);
@@ -110,7 +105,6 @@ public class CombatPanel {
             msg(mc, "\u00a77[\u00a7bChams\u00a77] Color: \u00a7e" + COLOR_NAMES[colorIndex]);
         }
 
-        // N — toggle filled vs wireframe
         while (chamsStyleKey.consumeClick()) {
             boolean filled = !MustyClient.chams.isFilledChams();
             MustyClient.chams.setFilledChams(filled);
@@ -119,12 +113,12 @@ public class CombatPanel {
     }
 
     private static void printStatus(Minecraft mc) {
-        msg(mc, "\u00a77=== \u00a7bMustyClient\u00a77 ===" );
-        msg(mc, "\u00a77MaceAura  [R]:  " + state(MustyClient.maceAura.isEnabled()));
-        msg(mc, "\u00a77MaceMacro [MB5]: \u00a7eActive (always on)");
-        msg(mc, "\u00a77Chams     [V]:  " + state(MustyClient.chams.isEnabled())
-                + "  Color [B]: \u00a7e" + COLOR_NAMES[colorIndex]
-                + "  Style [N]: \u00a7e" + (MustyClient.chams.isFilledChams() ? "Filled" : "Wireframe"));
+        msg(mc, "\u00a77=== \u00a7bMustyClient\u00a77 ===");
+        msg(mc, "\u00a77MaceAura  [R]:   " + state(MustyClient.maceAura.isEnabled()));
+        msg(mc, "\u00a77MaceMacro [MB5]: \u00a7eActive");
+        msg(mc, "\u00a77Chams     [V]:   " + state(MustyClient.chams.isEnabled())
+                + "  Color[B]: \u00a7e" + COLOR_NAMES[colorIndex]
+                + "  Style[N]: \u00a7e" + (MustyClient.chams.isFilledChams() ? "Filled" : "Wireframe"));
     }
 
     private static String state(boolean on) {
@@ -132,7 +126,6 @@ public class CombatPanel {
     }
 
     private static void msg(Minecraft mc, String text) {
-        if (mc.player != null)
-            mc.player.sendSystemMessage(Component.literal(text));
+        mc.player.sendSystemMessage(Component.literal(text));
     }
 }
